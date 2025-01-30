@@ -1,8 +1,9 @@
-import {Ejemplo01} from "./components/ejemplos"
+import {Ejemplo01,} from "./components/ejemplos"
 function App() {
   return (
     <div>
       <Ejemplo01/>
+     
     </div>
   );
 }
