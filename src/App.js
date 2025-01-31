@@ -1,8 +1,9 @@
-import {Ejemplo01,} from "./components/ejemplos"
+//import {Ejemplo01,} from "./components/ejemplos"
+import {HomeProductos} from "./components/productos/HomeProductos/HomeProductos"
 function App() {
   return (
     <div>
-      <Ejemplo01/>
+      <HomeProductos/>
      
     </div>
   );
