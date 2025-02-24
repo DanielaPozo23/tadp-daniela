@@ -1,0 +1,25 @@
+.container-celda{
+    width: 750px;
+    height: auto;
+    background-color: #fff;
+    border-radius: 10px;
+    display: flex;
+    margin:auto;
+    margin-top: 100px;
+ 
+ 
+ 
+     > h1{
+         color: #e2e2e2;
+         font-size: 70px;
+     }
+     &__button{
+         display: flex;
+         justify-content: space-between;
+ 
+          > button {
+             padding: 4px 4px 4px 4px;
+             color: darkslategray;
+         }
+     }
+ }
