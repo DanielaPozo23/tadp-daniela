@@ -12,6 +12,9 @@ export function ItemProductos({ producto }) {
         </Card.Title>
         <Card.Text className="body__text">
           {producto.description}
+          <p>Precio: {producto.precio}</p>
+          <p>Cantidad: {producto.cantidad}</p>
+          <p>Unidad: {producto.unidad}</p>
         </Card.Text>
       </Card.Body>
     </Card>
