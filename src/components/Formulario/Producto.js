@@ -1,61 +1,67 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useFormik } from "formik";
-import { Button, Form, Row, Col, InputGroup } from "react-bootstrap";
+import { useDropzone } from "react-dropzone";
+import { Button, Form, Row, Col, InputGroup, Image } from "react-bootstrap";
 import { initialValues, validationSchema } from "./Productos.form";
+import { imagenes } from "../../assets"
 import { Producto } from "../../api";
 import { ListProductos } from "../ListProductos/ListProductos";
+
+import "./Producto.scss";
 
 const ctrProducto = new Producto();
 
 export function Productos() {
-  const [listaProductos, setListaProductos] = useState([]);
+  const formulario = useRef();
+  const [productosData, setProductosData] = useState([]);
 
   const formik = useFormik({
     initialValues: initialValues(),
     validationSchema: validationSchema(),
     validateOnChange: false,
     onSubmit: async (formValue) => {
-      try {
-        await ctrProducto.createProduct(formValue);
-        // Recargar la página después de crear el producto
-        //window.location.reload();
-        obtenerProducto();
-      } catch (error) {
-        console.error("Error al crear el producto:", error);
-      }
+      await ctrProducto.createProduct(formValue);
+      buscarProductos();
     },
   });
 
-  const obtenerProducto = async () => {
-    try {
-      const listaPro = await ctrProducto.getProducto();
-      setListaProductos(listaPro || []); // Asegurarse de que listaPro sea un array
-    } catch (error) {
-      console.error("Error al obtener los productos:", error);
-      setListaProductos([]); // En caso de error, establecer listaProductos como un array vacío
-    }
+  const buscarProductos = async () => {
+    const prod = await ctrProducto.buscaProducto();
+    setProductosData(prod);
   };
 
   const eliminarProducto = async (id) => {
-    try {
-      console.log("Eliminando producto con ID:", id); // Verifica el ID del producto
-      await ctrProducto.deleteProduct(id);
-      // Actualizar la lista de productos localmente
-      setListaProductos((prevLista) => prevLista.filter((producto) => producto._id !== id));
-    } catch (error) {
-      console.error("Error al eliminar el producto:", error);
+    await ctrProducto.deleteProduct(id);
+    buscarProductos(); // Actualiza la lista después de eliminar
+  };
+
+  const onDrop = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0];
+    formik.setFieldValue("imagep", URL.createObjectURL(file));
+    formik.setFieldValue("imagenFile", file);
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: "image/jpeg, image/png, image/gif",
+    onDrop,
+  });
+
+  const getImagen = () => {
+    if (formik.values.imagenFile) {
+      return formik.values.imagep;
     }
+    return imagenes.noAvatar;
   };
 
   useEffect(() => {
-    obtenerProducto();
+    buscarProductos();
   }, []);
 
   return (
     <div className="p-4">
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="mb-3">
-          <Form.Group as={Col} md="12">
+          <Form.Group as={Col} md="12" controlId="validationCustom01">
             <Form.Label>Nombre del producto</Form.Label>
             <Form.Control
               type="text"
@@ -67,9 +73,10 @@ export function Productos() {
           </Form.Group>
         </Row>
         <Row className="mb-3">
-          <Form.Group as={Col} md="3">
+          <Form.Group as={Col} md="3" controlId="validationCustom02">
             <Form.Label>Precio</Form.Label>
             <Form.Control
+              required
               type="number"
               name="precio"
               placeholder="Precio"
@@ -77,9 +84,9 @@ export function Productos() {
               onChange={formik.handleChange}
             />
           </Form.Group>
-          <Form.Group as={Col} md="3">
+          <Form.Group as={Col} md="3" controlId="validationCustomUsername">
             <Form.Label>Cantidad</Form.Label>
-            <InputGroup>
+            <InputGroup hasValidation>
               <Form.Control
                 type="number"
                 name="cantidad"
@@ -97,25 +104,22 @@ export function Productos() {
               placeholder="Unidad"
               value={formik.values.unidad}
               onChange={formik.handleChange}
+              error={formik.errors.unidad}
             />
           </Form.Group>
-          <Form.Group as={Col} md="3">
-            <Form.Label>Imagen</Form.Label>
-            <Form.Control
-              type="file"
-              name="imagen"
-              onChange={(event) => formik.setFieldValue("imagen", event.currentTarget.files[0])}
-            />
-          </Form.Group>
+        </Row>
+        <Row>
+          <div className="form-imagen" {...getRootProps()}>
+            <input {...getInputProps()} />
+            <Image src={getImagen()} roundedCircle />
+          </div>
         </Row>
 
         <Button type="submit">Enviar</Button>
       </Form>
 
-      <Row className="mt-4">
-        <Col>
-          <ListProductos productos={listaProductos} eliminarProducto={eliminarProducto} />
-        </Col>
+      <Row>
+        <ListProductos productos={productosData} onDelete={eliminarProducto} />
       </Row>
     </div>
   );

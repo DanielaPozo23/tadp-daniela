@@ -1,12 +1,12 @@
+import Axios from "../services/Axios";
 
-
-const localH="http://localhost:4000/api"
-
-export const ENV={
-    BASE_API:localH,
-    API_ROUTES:{
-        CREATEPRODUCTO:"/createproduct",
-        GETPRODUCTO:"/getproducto",
-        DELETEPRODUCTO:"/delproducto"
+export const ENV = {
+    BASE_PATH: "http://localhost:4000",
+    BASE_API: "http://localhost:4000/api",
+    API_ROUTES: {
+        CREATEPRODUCTO: "createproduct",
+        GETPRODUCTO: "getproducto",
+        DELPRODUCTO: "delproducto",
+        UPDATEPRODUCTO: "updateproducto",
     }
-}
+};
