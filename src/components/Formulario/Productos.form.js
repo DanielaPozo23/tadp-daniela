@@ -1,12 +1,12 @@
 import * as YUP from "yup";
 
-export function initialValues(){
+export function initialValues(producto){
     return{
-        nombre: "",
-        precio: "",
-        cantidad: "",
-        unidad: "",
-        imagep:"",
+        nombre: producto?.nombre || "",
+        precio: producto?.precio || "",
+        cantidad: producto?.cantidad || "",
+        unidad: producto?.unidad ||"",
+        imagep: producto?.imagep ||"",
         imagenFile:null
     }
 }
@@ -17,6 +17,6 @@ export function validationSchema(){
         precio: YUP.number(),
         cantidad: YUP.number(),
         unidad: YUP.string(),
-        imagen: YUP.string()
+        imagep: YUP.string()
     })
 }

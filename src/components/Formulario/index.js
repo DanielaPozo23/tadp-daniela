@@ -1,1 +1,2 @@
-export * from "./Producto"
+export * from "./Producto";
+export * from "./FormGuardarEdit";

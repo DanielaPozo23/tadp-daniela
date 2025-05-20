@@ -1,125 +1,60 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
-import { useFormik } from "formik";
-import { useDropzone } from "react-dropzone";
-import { Button, Form, Row, Col, InputGroup, Image } from "react-bootstrap";
-import { initialValues, validationSchema } from "./Productos.form";
-import { imagenes } from "../../assets"
+import React, { useState, useEffect } from "react";
+
+import { Button, Modal, Row } from "react-bootstrap";
+
 import { Producto } from "../../api";
-import { ListProductos } from "../ListProductos/ListProductos";
 
 import "./Producto.scss";
+import { ListProductos } from "../ListProductos/ListProductos";
+import { FormGuardarEdit } from "./FormGuardarEdit";
 
 const ctrProducto = new Producto();
 
 export function Productos() {
-  const formulario = useRef();
+  
   const [productosData, setProductosData] = useState([]);
+ const [show, setShow] = useState(false)
+ const [reload, setReload]=useState(false);
 
-  const formik = useFormik({
-    initialValues: initialValues(),
-    validationSchema: validationSchema(),
-    validateOnChange: false,
-    onSubmit: async (formValue) => {
-      await ctrProducto.createProduct(formValue);
-      buscarProductos();
-    },
-  });
+const openCloseModal=()=>setShow((prevState)=>!prevState);
+const onReload=()=>setReload((prevState)=>!prevState);
 
   const buscarProductos = async () => {
     const prod = await ctrProducto.buscaProducto();
     setProductosData(prod);
+    console.log(prod);
   };
 
+
+  
   const eliminarProducto = async (id) => {
-    await ctrProducto.deleteProduct(id);
-    buscarProductos(); // Actualiza la lista después de eliminar
-  };
-
-  const onDrop = useCallback((acceptedFiles) => {
-    const file = acceptedFiles[0];
-    formik.setFieldValue("imagep", URL.createObjectURL(file));
-    formik.setFieldValue("imagenFile", file);
-  }, []);
-
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: "image/jpeg, image/png, image/gif",
-    onDrop,
-  });
-
-  const getImagen = () => {
-    if (formik.values.imagenFile) {
-      return formik.values.imagep;
-    }
-    return imagenes.noAvatar;
+    await ctrProducto.delProducto(id);
+    buscarProductos();
   };
 
   useEffect(() => {
     buscarProductos();
-  }, []);
+  }, [reload]);
 
   return (
     <div className="p-4">
-      <Form noValidate onSubmit={formik.handleSubmit}>
-        <Row className="mb-3">
-          <Form.Group as={Col} md="12" controlId="validationCustom01">
-            <Form.Label>Nombre del producto</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Producto"
-              name="nombre"
-              onChange={formik.handleChange}
-              value={formik.values.nombre}
-            />
-          </Form.Group>
-        </Row>
-        <Row className="mb-3">
-          <Form.Group as={Col} md="3" controlId="validationCustom02">
-            <Form.Label>Precio</Form.Label>
-            <Form.Control
-              required
-              type="number"
-              name="precio"
-              placeholder="Precio"
-              value={formik.values.precio}
-              onChange={formik.handleChange}
-            />
-          </Form.Group>
-          <Form.Group as={Col} md="3" controlId="validationCustomUsername">
-            <Form.Label>Cantidad</Form.Label>
-            <InputGroup hasValidation>
-              <Form.Control
-                type="number"
-                name="cantidad"
-                placeholder="Cantidad"
-                value={formik.values.cantidad}
-                onChange={formik.handleChange}
-              />
-            </InputGroup>
-          </Form.Group>
-          <Form.Group as={Col} md="3">
-            <Form.Label>Unidad</Form.Label>
-            <Form.Control
-              type="text"
-              name="unidad"
-              placeholder="Unidad"
-              value={formik.values.unidad}
-              onChange={formik.handleChange}
-              error={formik.errors.unidad}
-            />
-          </Form.Group>
-        </Row>
-        <Row>
-          <div className="form-imagen" {...getRootProps()}>
-            <input {...getInputProps()} />
-            <Image src={getImagen()} roundedCircle />
-          </div>
-        </Row>
-
-        <Button type="submit">Enviar</Button>
-      </Form>
+     <Row>
+     <Button variant="success" size="lg" onClick={openCloseModal}>Agregar producto...</Button>
+     </Row>
 
       <Row>
-        <ListProductos productos={productosData} onDelete={eliminarProducto} />
+        <ListProductos productos={productosData} eliminar={eliminarProducto} onReload={onReload} />
+      </Row>
+      <Row>
+      <Modal show={show} onHide={openCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Guardar producto</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <FormGuardarEdit onReload={onReload} close={openCloseModal} />
+        </Modal.Body>
+       
+      </Modal>
       </Row>
     </div>
   );
